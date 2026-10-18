@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1792360993|6995625';
+const CACHE_VERSION = '1792362708|6883963';
 /** @type {string} */
 const CACHE_PREFIX = 'Vila do Sol: Cor-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;

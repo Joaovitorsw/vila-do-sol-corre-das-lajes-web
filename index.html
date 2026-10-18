@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+		<meta name="theme-color" content="#102e3a">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 		<title>Vila do Sol: Corre das Lajes</title>
 		<style>
 html, body, #canvas {
@@ -15,7 +18,6 @@ body {
 	color: white;
 	background-color: black;
 	overflow: hidden;
-	touch-action: none;
 }
 
 #canvas {
@@ -90,12 +92,108 @@ body {
 	z-index: 1;
 }
 		</style>
+		<!-- Based on installed Godot 4.7.2.stable godot.html, web_nothreads_release.zip.
+		     Keep the native loader and export placeholders below intact.
+		     Export option: html/custom_html_shell="res://tools/web/mobile-shell.html".
+		     Inline mobile assets intentionally require no extra export copy step.
+		     References: https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen
+		     https://developer.mozilla.org/en-US/docs/Web/API/BeforeInstallPromptEvent
+		     https://webkit.org/blog/7929/designing-websites-for-iphone-x/
+		     https://support.apple.com/guide/iphone/bookmark-a-website-iph42ab2f3a7/ios -->
+		<style>
+html { height: 100%; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+body { height: 100dvh; overscroll-behavior: none; }
+#canvas { touch-action: none; }
+#mobile-tools, #mobile-help, #mobile-rotate {
+	font: 600 14px/1.4 system-ui, sans-serif;
+	color: #fff;
+}
+#mobile-tools {
+	position: fixed;
+	top: max(6px, env(safe-area-inset-top, 0px));
+	left: max(8px, env(safe-area-inset-left, 0px));
+	right: max(8px, env(safe-area-inset-right, 0px));
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	pointer-events: none;
+	z-index: 5;
+}
+#mobile-tools button, #mobile-close {
+	min-height: 44px;
+	min-width: 44px;
+	border: 1px solid #87c3d2;
+	border-radius: 8px;
+	padding: 8px 12px;
+	font: inherit;
+	color: #fff;
+	background: #102e3a;
+	pointer-events: auto;
+	touch-action: manipulation;
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: transparent;
+	cursor: pointer;
+}
+#mobile-tools button:active, #mobile-close:active { background: #245767; }
+#mobile-tools button:focus-visible, #mobile-close:focus-visible {
+	outline: 3px solid #ffdf70;
+	outline-offset: 2px;
+}
+#mobile-help {
+	position: fixed;
+	top: calc(max(6px, env(safe-area-inset-top, 0px)) + 52px);
+	left: max(12px, env(safe-area-inset-left, 0px));
+	right: max(12px, env(safe-area-inset-right, 0px));
+	max-height: calc(100dvh - 80px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+	max-width: 34rem;
+	margin-inline: auto;
+	box-sizing: border-box;
+	padding: 12px;
+	border: 1px solid #87c3d2;
+	border-radius: 8px;
+	background: #102e3a;
+	overflow: auto;
+	overscroll-behavior: contain;
+	touch-action: pan-y;
+	z-index: 6;
+}
+#mobile-help[hidden], #mobile-tools button[hidden] { display: none; }
+#mobile-help-text { margin: 0 0 10px; font-weight: 400; }
+#mobile-rotate {
+	display: none;
+	position: fixed;
+	bottom: max(8px, env(safe-area-inset-bottom, 0px));
+	left: max(12px, env(safe-area-inset-left, 0px));
+	right: max(12px, env(safe-area-inset-right, 0px));
+	text-align: center;
+	pointer-events: none;
+	text-shadow: 0 1px 3px #000;
+	z-index: 4;
+}
+@media (orientation: portrait) and (pointer: coarse) {
+	#mobile-rotate { display: block; }
+}
+@media (hover: hover) and (pointer: fine) {
+	#mobile-tools button:hover, #mobile-close:hover { background: #245767; }
+}
+		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 <link rel="manifest" href="index.manifest.json">
-<style>@media (orientation: portrait) and (pointer: coarse) { body::after { content: 'Gire o celular para jogar'; position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 24px; background: #15252f; color: #fff; font: 600 24px/1.4 system-ui, sans-serif; text-align: center; } }</style>
+
 	</head>
 	<body>
+		<nav id="mobile-tools" aria-label="Opções do jogo">
+			<button id="mobile-fullscreen" type="button" aria-pressed="false" aria-controls="mobile-help">Tela cheia</button>
+			<button id="mobile-install" type="button" aria-controls="mobile-help">Instalar / ajuda</button>
+		</nav>
+		<section id="mobile-help" hidden aria-label="Ajuda de tela e instalação">
+			<p id="mobile-help-text" role="status" aria-live="polite"></p>
+			<button id="mobile-close" type="button">Voltar ao jogo</button>
+		</section>
+		<p id="mobile-rotate">Gire o celular para jogar na horizontal.</p>
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
 		</canvas>
@@ -110,9 +208,103 @@ body {
 			<div id="status-notice"></div>
 		</div>
 
+		<script id="mobile-shell-code">
+// UI is independent of engine initialization, including the loading/error screens.
+(function () {
+	'use strict';
+	const fullscreenButton = document.getElementById('mobile-fullscreen');
+	const installButton = document.getElementById('mobile-install');
+	const help = document.getElementById('mobile-help');
+	const helpText = document.getElementById('mobile-help-text');
+	const standalone = window.matchMedia('(display-mode: standalone)');
+	const fullscreenDisplay = window.matchMedia('(display-mode: fullscreen)');
+	let installPrompt = null;
+	let installed = false;
+	const installHelp = 'No iPhone: abra no Safari, toque em Compartilhar (ou no menu da página e depois Compartilhar), escolha Adicionar à Tela de Início e ative Abrir como App, se aparecer. Depois, abra pelo ícone criado. Em outros navegadores, procure Instalar app no menu. A opção depende do navegador e do site.';
+
+	function showHelp(message) {
+		helpText.textContent = message;
+		help.hidden = false;
+		document.getElementById('mobile-close').focus();
+	}
+	function closeHelp() {
+		help.hidden = true;
+		document.getElementById('canvas').focus();
+	}
+	function isInstalled() {
+		return installed || standalone.matches || fullscreenDisplay.matches || navigator.standalone === true;
+	}
+	function updateControls() {
+		const active = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+		fullscreenButton.textContent = active ? 'Sair da tela cheia' : 'Tela cheia';
+		fullscreenButton.setAttribute('aria-pressed', String(active));
+		installButton.hidden = isInstalled();
+		installButton.textContent = installPrompt ? 'Instalar jogo' : 'Instalar / ajuda';
+	}
+	async function toggleFullscreen() {
+		const active = document.fullscreenElement || document.webkitFullscreenElement;
+		const root = document.documentElement;
+		const request = root.requestFullscreen || root.webkitRequestFullscreen;
+		const exit = document.exitFullscreen || document.webkitExitFullscreen;
+		try {
+			if (active && exit) {
+				await exit.call(document);
+			} else if (request && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+				// Fullscreen the document so the exit button stays reachable.
+				await request.call(root);
+			} else {
+				showHelp(isInstalled() ? 'O jogo já está aberto como app. A tela cheia adicional depende do navegador. Gire o celular para jogar na horizontal.' : 'Este navegador não oferece tela cheia para o jogo. ' + installHelp);
+			}
+		} catch {
+			showHelp('O navegador não permitiu ativar ou sair da tela cheia. ' + installHelp);
+		}
+		updateControls();
+	}
+	async function installGame() {
+		if (!installPrompt) {
+			showHelp(installHelp);
+			return;
+		}
+		const prompt = installPrompt;
+		installPrompt = null;
+		installButton.disabled = true;
+		try {
+			await prompt.prompt();
+		} catch {
+			showHelp('Não foi possível abrir a instalação. ' + installHelp);
+		} finally {
+			installButton.disabled = false;
+			updateControls();
+		}
+	}
+	window.addEventListener('beforeinstallprompt', function (event) {
+		event.preventDefault();
+		installPrompt = event;
+		updateControls();
+	});
+	window.addEventListener('appinstalled', function () {
+		installed = true;
+		installPrompt = null;
+		closeHelp();
+		updateControls();
+	});
+	for (const query of [standalone, fullscreenDisplay]) {
+		if (query.addEventListener) query.addEventListener('change', updateControls);
+	}
+	document.addEventListener('fullscreenchange', updateControls);
+	document.addEventListener('webkitfullscreenchange', updateControls);
+	document.addEventListener('keydown', function (event) {
+		if (event.key === 'Escape' && !help.hidden) closeHelp();
+	});
+	fullscreenButton.addEventListener('click', toggleFullscreen);
+	installButton.addEventListener('click', installGame);
+	document.getElementById('mobile-close').addEventListener('click', closeHelp);
+	updateControls();
+}());
+		</script>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":55468696,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":58511468,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
