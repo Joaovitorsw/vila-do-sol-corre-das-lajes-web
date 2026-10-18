@@ -119,7 +119,7 @@ body { height: 100dvh; overscroll-behavior: none; }
 	pointer-events: none;
 	z-index: 5;
 }
-#mobile-tools button, #mobile-close {
+#mobile-tools button, #mobile-close, #mobile-app-action {
 	min-height: 44px;
 	min-width: 44px;
 	border: 1px solid #87c3d2;
@@ -165,7 +165,24 @@ body { height: 100dvh; overscroll-behavior: none; }
 	touch-action: pan-y;
 	z-index: 6;
 }
-#mobile-help[hidden], #mobile-tools button[hidden] { display: none; }
+#mobile-app-gate[hidden], #mobile-help[hidden], #mobile-tools button[hidden] { display: none; }
+#mobile-app-gate {
+	position: fixed;
+	inset: 0;
+	z-index: 10;
+	box-sizing: border-box;
+	overflow: auto;
+	padding: max(24px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
+	background: #102e3a;
+	color: #fff0bf;
+	font: 400 16px/1.5 system-ui, sans-serif;
+	touch-action: pan-y;
+}
+#mobile-app-gate > div { max-width: 34rem; margin: auto; }
+#mobile-app-gate h1 { font-size: 1.75rem; line-height: 1.2; }
+#mobile-app-action { font-weight: 700; border-color: #ffdf70; }
+#mobile-app-action:focus-visible { outline: 3px solid #ffdf70; outline-offset: 3px; }
+#mobile-app-action:disabled { opacity: 0.7; cursor: wait; }
 #mobile-help-text { margin: 0 0 10px; font-weight: 400; }
 #mobile-rotate {
 	display: none;
@@ -191,6 +208,15 @@ body { height: 100dvh; overscroll-behavior: none; }
 
 	</head>
 	<body>
+		<section id="mobile-app-gate" hidden aria-labelledby="mobile-app-title">
+			<div>
+				<h1 id="mobile-app-title">Jogue pelo app Vila do Sol</h1>
+				<p>No celular, instale o jogo e abra pelo ícone na Tela de Início para jogar sem as barras do navegador.</p>
+				<button id="mobile-app-action" type="button">Instalar jogo</button>
+				<p id="mobile-app-message" role="status" aria-live="polite"></p>
+				<p>Já instalou? Saia desta aba e abra o ícone do jogo. O navegador não consegue abrir o app automaticamente.</p>
+			</div>
+		</section>
 		<nav id="mobile-tools" aria-label="Opções do jogo">
 			<button id="mobile-fullscreen" type="button" aria-label="Tela cheia" title="Tela cheia" aria-pressed="false" aria-controls="mobile-help">
 				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path id="mobile-fullscreen-icon" d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg>
@@ -226,6 +252,14 @@ body { height: 100dvh; overscroll-behavior: none; }
 	const installButton = document.getElementById('mobile-install');
 	const help = document.getElementById('mobile-help');
 	const helpText = document.getElementById('mobile-help-text');
+	const appGate = document.getElementById('mobile-app-gate');
+	const appAction = document.getElementById('mobile-app-action');
+	const appMessage = document.getElementById('mobile-app-message');
+	const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+	const mobile = ios || /Android/.test(navigator.userAgent) || window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+	let allowGame;
+	const ready = new Promise(function (resolve) { allowGame = resolve; });
+	window.mobileAppShell = { ready, requiresInstalledApp: function () { return mobile && !isAppContext(); } };
 	const standalone = window.matchMedia('(display-mode: standalone)');
 	const fullscreenDisplay = window.matchMedia('(display-mode: fullscreen)');
 	let installPrompt = null;
@@ -241,17 +275,29 @@ body { height: 100dvh; overscroll-behavior: none; }
 		help.hidden = true;
 		document.getElementById('canvas').focus();
 	}
-	function isInstalled() {
-		return installed || standalone.matches || fullscreenDisplay.matches || navigator.standalone === true;
+	function isAppContext() {
+		return standalone.matches || navigator.standalone === true;
+	}
+	function isInstalled() { return installed || isAppContext(); }
+	function installationMessage(message) {
+		if (window.mobileAppShell.requiresInstalledApp()) appMessage.textContent = message;
+		else showHelp(message);
 	}
 	function updateControls() {
+		const blocked = window.mobileAppShell.requiresInstalledApp();
+		appGate.hidden = !blocked;
+		document.getElementById('canvas').inert = blocked;
+		fullscreenButton.hidden = blocked || isAppContext();
+		installButton.hidden = blocked || isInstalled();
+		if (!blocked) allowGame();
+		appAction.textContent = installed ? 'Como abrir o jogo' : installPrompt ? 'Instalar jogo' : ios ? 'Como instalar no iPhone / iPad' : 'Como instalar o jogo';
+		if (!appMessage.textContent) appMessage.textContent = ios ? installHelp : 'Toque em Instalar jogo quando disponível. Se a instalação não aparecer, procure Instalar app ou Adicionar à Tela de Início no menu do navegador.';
 		const active = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
 		const fullscreenLabel = active ? 'Sair da tela cheia' : 'Tela cheia';
 		fullscreenButton.setAttribute('aria-label', fullscreenLabel);
 		fullscreenButton.setAttribute('title', fullscreenLabel);
 		document.getElementById('mobile-fullscreen-icon').setAttribute('d', active ? 'M3 8h5V3m8 0v5h5M8 21v-5H3m13 5v-5h5' : 'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5');
 		fullscreenButton.setAttribute('aria-pressed', String(active));
-		installButton.hidden = isInstalled();
 		const installLabel = installPrompt ? 'Instalar jogo' : 'Instalar / ajuda';
 		installButton.setAttribute('aria-label', installLabel);
 		installButton.setAttribute('title', installLabel);
@@ -277,19 +323,28 @@ body { height: 100dvh; overscroll-behavior: none; }
 		updateControls();
 	}
 	async function installGame() {
+		if (isAppContext() || installButton.disabled) return;
 		if (!installPrompt) {
-			showHelp(installHelp);
+			installationMessage(installed ? 'O jogo foi instalado. Abra pelo ícone na Tela de Início ou na lista de apps.' : installHelp);
 			return;
 		}
 		const prompt = installPrompt;
 		installPrompt = null;
 		installButton.disabled = true;
+		appAction.disabled = true;
 		try {
-			await prompt.prompt();
+			const result = await prompt.prompt();
+			const choice = result || (prompt.userChoice ? await prompt.userChoice : null);
+			if (choice && choice.outcome === 'accepted') {
+				installationMessage('Instalação solicitada. Aguarde a conclusão e abra o jogo pelo ícone na Tela de Início ou na lista de apps.');
+			} else {
+				installationMessage('Instalação não concluída. Você pode tentar novamente pelo menu do navegador. ' + installHelp);
+			}
 		} catch {
-			showHelp('Não foi possível abrir a instalação. ' + installHelp);
+			installationMessage('Não foi possível abrir a instalação. ' + installHelp);
 		} finally {
 			installButton.disabled = false;
+			appAction.disabled = false;
 			updateControls();
 		}
 	}
@@ -301,7 +356,8 @@ body { height: 100dvh; overscroll-behavior: none; }
 	window.addEventListener('appinstalled', function () {
 		installed = true;
 		installPrompt = null;
-		closeHelp();
+		if (window.mobileAppShell.requiresInstalledApp()) installationMessage('Jogo instalado! Saia desta aba e abra pelo ícone na Tela de Início ou na lista de apps.');
+		else closeHelp();
 		updateControls();
 	});
 	for (const query of [standalone, fullscreenDisplay]) {
@@ -314,13 +370,14 @@ body { height: 100dvh; overscroll-behavior: none; }
 	});
 	fullscreenButton.addEventListener('click', toggleFullscreen);
 	installButton.addEventListener('click', installGame);
+	appAction.addEventListener('click', installGame);
 	document.getElementById('mobile-close').addEventListener('click', closeHelp);
 	updateControls();
 }());
 		</script>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":57160424,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":58549292,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -371,6 +428,11 @@ const engine = new Engine(GODOT_CONFIG);
 		initializing = false;
 	}
 
+	// Register while the mobile installation page is open; startGame also registers normally.
+	if (window.mobileAppShell.requiresInstalledApp() && GODOT_CONFIG['serviceWorker']) {
+		engine.installServiceWorker().catch(function (error) { console.error('Service worker registration failed:', error); });
+	}
+	window.mobileAppShell.ready.then(function () {
 	const missing = Engine.getMissingFeatures({
 		threads: GODOT_THREADS_ENABLED,
 	});
@@ -422,6 +484,7 @@ const engine = new Engine(GODOT_CONFIG);
 			setStatusMode('hidden');
 		}, displayFailureNotice);
 	}
+	});
 }());
 		</script>
 	</body>

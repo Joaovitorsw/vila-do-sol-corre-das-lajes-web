@@ -1,12 +1,12 @@
 {
-  "build": "20261018-225510-212-03791954",
-  "created_utc": "2026-10-18T22:55:20.1894288Z",
+  "build": "20261018-235608-550-d672edb6",
+  "created_utc": "2026-10-18T23:56:17.8892565Z",
   "engine": "4.7.2.stable.official.ed1daf0bf",
   "preset": "Web",
   "renderer": "gl_compatibility",
   "threads": false,
   "pwa": true,
-  "git_head": null,
+  "git_head": "2bb2a87a36479f4e7cb2bee491e12f05f7377db1",
   "git_dirty": true,
   "preset_sha256": "c48db22a4230424b8f768ac085602a99e14542ac238a5af61f7710a0a298c2ff",
   "template_sha256": "d3ee2f08cef0cf3cf6678a6355a92a8db48ccdd35cbd2e8bfd5f0e8a0b4032a0",
@@ -49,8 +49,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 14824,
-      "sha256": "c7a042a3c70f16a9e98fec8890a6330b6207ac74772d7a89499c95e338398953"
+      "bytes": 18898,
+      "sha256": "af96118024063bb8b09517e97ba95b078cf75d135ddf98b142b8e039f74f6785"
     },
     {
       "path": "index.icon.png",
@@ -74,8 +74,8 @@
     },
     {
       "path": "index.pck",
-      "bytes": 57160424,
-      "sha256": "6ceefca4b878a7d81aa76aa98a329bb7edddf753b336d79846af96d91f45d790"
+      "bytes": 58549292,
+      "sha256": "b468377c80706514e563bfb6d2e03b738d03a73ae32de7998cfacc630a999814"
     },
     {
       "path": "index.png",
@@ -85,7 +85,7 @@
     {
       "path": "index.service.worker.js",
       "bytes": 5829,
-      "sha256": "da938da7c7dd172dca35b2f54d60d577960a4dac3fe8ad6cec2973b39cdd3d81"
+      "sha256": "b2b231085a438ae4b7ba9a8fefc9316f5ae1cca4e9a93cb7f6e7c503314d805a"
     },
     {
       "path": "index.wasm",
