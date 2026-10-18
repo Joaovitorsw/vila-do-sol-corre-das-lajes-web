@@ -126,7 +126,7 @@ body { height: 100dvh; overscroll-behavior: none; }
 	border-radius: 8px;
 	padding: 8px 12px;
 	font: inherit;
-	color: #fff;
+	color: #fff0bf;
 	background: #102e3a;
 	pointer-events: auto;
 	touch-action: manipulation;
@@ -136,7 +136,13 @@ body { height: 100dvh; overscroll-behavior: none; }
 	-webkit-tap-highlight-color: transparent;
 	cursor: pointer;
 }
-#mobile-tools button:active, #mobile-close:active { background: #245767; }
+#mobile-tools button svg { display: block; width: 24px; height: 24px; margin: auto; }
+#mobile-tools button:active, #mobile-close:active {
+	background: #fff0bf;
+	color: #102e3a;
+	border-color: #fff0bf;
+}
+#mobile-tools button:disabled { border-style: dashed; cursor: wait; }
 #mobile-tools button:focus-visible, #mobile-close:focus-visible {
 	outline: 3px solid #ffdf70;
 	outline-offset: 2px;
@@ -176,7 +182,7 @@ body { height: 100dvh; overscroll-behavior: none; }
 	#mobile-rotate { display: block; }
 }
 @media (hover: hover) and (pointer: fine) {
-	#mobile-tools button:hover, #mobile-close:hover { background: #245767; }
+	#mobile-tools button:hover:not(:active), #mobile-close:hover:not(:active) { background: #245767; }
 }
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
@@ -186,8 +192,12 @@ body { height: 100dvh; overscroll-behavior: none; }
 	</head>
 	<body>
 		<nav id="mobile-tools" aria-label="Opções do jogo">
-			<button id="mobile-fullscreen" type="button" aria-pressed="false" aria-controls="mobile-help">Tela cheia</button>
-			<button id="mobile-install" type="button" aria-controls="mobile-help">Instalar / ajuda</button>
+			<button id="mobile-fullscreen" type="button" aria-label="Tela cheia" title="Tela cheia" aria-pressed="false" aria-controls="mobile-help">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path id="mobile-fullscreen-icon" d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg>
+			</button>
+			<button id="mobile-install" type="button" aria-label="Instalar / ajuda" title="Instalar / ajuda" aria-controls="mobile-help">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path id="mobile-install-icon" d="M3 11l9-8 9 8M5 10v11h5v-7h4v7h5V10"/></svg>
+			</button>
 		</nav>
 		<section id="mobile-help" hidden aria-label="Ajuda de tela e instalação">
 			<p id="mobile-help-text" role="status" aria-live="polite"></p>
@@ -236,10 +246,16 @@ body { height: 100dvh; overscroll-behavior: none; }
 	}
 	function updateControls() {
 		const active = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
-		fullscreenButton.textContent = active ? 'Sair da tela cheia' : 'Tela cheia';
+		const fullscreenLabel = active ? 'Sair da tela cheia' : 'Tela cheia';
+		fullscreenButton.setAttribute('aria-label', fullscreenLabel);
+		fullscreenButton.setAttribute('title', fullscreenLabel);
+		document.getElementById('mobile-fullscreen-icon').setAttribute('d', active ? 'M3 8h5V3m8 0v5h5M8 21v-5H3m13 5v-5h5' : 'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5');
 		fullscreenButton.setAttribute('aria-pressed', String(active));
 		installButton.hidden = isInstalled();
-		installButton.textContent = installPrompt ? 'Instalar jogo' : 'Instalar / ajuda';
+		const installLabel = installPrompt ? 'Instalar jogo' : 'Instalar / ajuda';
+		installButton.setAttribute('aria-label', installLabel);
+		installButton.setAttribute('title', installLabel);
+		document.getElementById('mobile-install-icon').setAttribute('d', installPrompt ? 'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5' : 'M3 11l9-8 9 8M5 10v11h5v-7h4v7h5V10');
 	}
 	async function toggleFullscreen() {
 		const active = document.fullscreenElement || document.webkitFullscreenElement;
@@ -304,7 +320,7 @@ body { height: 100dvh; overscroll-behavior: none; }
 		</script>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":60388460,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":60440580,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
