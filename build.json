@@ -1,6 +1,6 @@
 {
-  "build": "20261018-225129-682-d3aeb92e",
-  "created_utc": "2026-10-18T22:51:38.6271212Z",
+  "build": "20261018-225510-212-03791954",
+  "created_utc": "2026-10-18T22:55:20.1894288Z",
   "engine": "4.7.2.stable.official.ed1daf0bf",
   "preset": "Web",
   "renderer": "gl_compatibility",
@@ -50,7 +50,7 @@
     {
       "path": "index.html",
       "bytes": 14824,
-      "sha256": "6e6b7f2c47b49a3e92dc55d35b4cb436c5ca3622cf82a79245f8dadeb4b5c831"
+      "sha256": "c7a042a3c70f16a9e98fec8890a6330b6207ac74772d7a89499c95e338398953"
     },
     {
       "path": "index.icon.png",
@@ -74,8 +74,8 @@
     },
     {
       "path": "index.pck",
-      "bytes": 60449872,
-      "sha256": "44dfcdf2506dcb24f465b484384e598a249ad44e751a134f7e78e04b482ae4dc"
+      "bytes": 57160424,
+      "sha256": "6ceefca4b878a7d81aa76aa98a329bb7edddf753b336d79846af96d91f45d790"
     },
     {
       "path": "index.png",
@@ -85,7 +85,7 @@
     {
       "path": "index.service.worker.js",
       "bytes": 5829,
-      "sha256": "217237145369f18084532a55cc6a77fb3c3075f5d037a647a74bf577d21573d5"
+      "sha256": "da938da7c7dd172dca35b2f54d60d577960a4dac3fe8ad6cec2973b39cdd3d81"
     },
     {
       "path": "index.wasm",
